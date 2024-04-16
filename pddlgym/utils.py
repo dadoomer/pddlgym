@@ -51,14 +51,14 @@ def run_demo(env, policy, max_num_steps=10, render=False,
             print("Obs:", obs)
 
         if render:
-            images.append(env.render())
-    
+           images.append(env.render())
+
         action = policy(obs)
         if verbose:
             print("Act:", action)
 
         obs, reward, done, _, _ = env.step(action)
-        env.render()
+        #env.render()
         if verbose:
             print("Rew:", reward)
 
@@ -71,7 +71,14 @@ def run_demo(env, policy, max_num_steps=10, render=False,
 
     if render:
         images.append(env.render())
-        imageio.mimwrite(video_path, images, fps=fps)
+        # Clean up images list: render function sometimes returns null and
+        # MP4 expects RGB arrays, not RGBA
+        images = [
+            image[:, :, :3]
+            for image in images
+            if image is not None
+        ]
+        imageio.mimwrite(video_path, images, codec="vp9", fps=fps)
         print("Wrote out video to", video_path)
 
     env.close()
